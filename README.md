@@ -6,6 +6,9 @@
 
 ## Español
 
+### 🔗 Acceso
+- Sitio en producción: [simuladorluz.netlify.app](https://simuladorluz.netlify.app)
+
 ### ✨ Características
 - Tema claro/oscuro con persistencia en `localStorage`
 - Cálculo para:
@@ -21,6 +24,7 @@ Enlaces:
 
 ### 📸 Demo
 - Abre `index.html` directamente en tu navegador.
+- O usa la versión desplegada: [simuladorluz.netlify.app](https://simuladorluz.netlify.app)
 - No requiere servidor ni instalación.
 
 ### 🚀 Empezar
@@ -105,6 +109,9 @@ Enlaces:
 
 ## English
 
+### 🔗 Access
+- Production site: [simuladorluz.netlify.app](https://simuladorluz.netlify.app)
+
 ### ✨ Features
 - Light/Dark theme with persistence in `localStorage`
 - Calculation for:
@@ -120,6 +127,7 @@ Links:
 
 ### 📸 Demo
 - Open `index.html` directly in your browser.
+- Or use the deployed version: [simuladorluz.netlify.app](https://simuladorluz.netlify.app)
 - No server or installation required.
 
 ### 🚀 Getting Started
