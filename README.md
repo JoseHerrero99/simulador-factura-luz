@@ -100,10 +100,11 @@ Enlaces:
 - GitHub Issues: [Docs](https://docs.github.com/issues)
 
 ### 📄 Licencia
-MIT. Puedes usarlo y adaptarlo libremente.
+GPL-3.0. Puedes usarlo, modificarlo y redistribuirlo bajo los términos de la GNU General Public License versión 3.
 
 Enlaces:
-- Licencia MIT: [Open Source Initiative](https://opensource.org/license/mit/)
+- Texto de la licencia (ES/EN): [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)
+- Resumen y FAQ: [GNU GPLv3 FAQ](https://www.gnu.org/licenses/gpl-faq.html)
 
 ---
 
@@ -203,7 +204,8 @@ Links:
 - GitHub Issues: [Docs](https://docs.github.com/issues)
 
 ### 📄 License
-MIT. Free to use and adapt.
+GPL-3.0. You may use, modify, and redistribute under the terms of the GNU General Public License version 3.
 
 Links:
-- MIT License: [Open Source Initiative](https://opensource.org/license/mit/)
+- License text: [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)
+- Summary and FAQ: [GNU GPLv3 FAQ](https://www.gnu.org/licenses/gpl-faq.html)
