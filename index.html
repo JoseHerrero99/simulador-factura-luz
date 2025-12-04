@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador factura luz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts and base styles -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Design tokens (dark by default) */
+    :root{
+      --radius: 10px;
+      --gap: 12px;
+      --field-w: 160px;
+
+      --focus: #6b8cff;
+      --ok: #4fb476;
+
+      --bg: #0f1216;
+      --surface: #161a20;
+      --surface-2: #1b2027;
+      --border: #2a313b;
+      --primary: #c8d1ff;
+      --primary-2: #e6e9ff;
+      --text: #e7eaee;
+      --text-dim: #b5bac3;
+      --input-bg: #12161c;
+      --checkbox-bg: #12161c;
+      --mono: #dfe5f2;
+    }
+
+    /* Light theme overrides */
+    :root[data-theme="light"]{
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-2: #fbfcfd;
+      --border: #dde1e8;
+      --primary: #3b4a6b;
+      --primary-2: #2b3853;
+      --text: #1f2430;
+      --text-dim: #596273;
+      --input-bg: #f3f5f8;
+      --checkbox-bg: #f3f5f8;
+      --mono: #2b3240;
+      --focus: #384b98;
+      --ok: #2f845f;
+    }
+
+    /* Base layout and typography */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: var(--gap);
+    }
+
+    /* Header */
+    header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: conic-gradient(from 220deg at 50% 50%, #74a8ff, #a3ffd4, #ffd089, #74a8ff);
+      padding: 3px; position: relative;
+      box-shadow: 0 8px 26px rgba(116,168,255,0.28), inset 0 0 24px rgba(163,255,212,0.22);
+    }
+    .logo::before{ content:""; position:absolute; inset: 4px; border-radius: 9px; background: var(--surface-2); }
+    h1 {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: clamp(20px, 5.5vw, 28px);
+      color: var(--primary-2);
+    }
+    .fine { color: var(--text-dim); font-size: 13px; }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      width: 90px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .theme-toggle:focus{ outline: 2px solid var(--focus); outline-offset: 2px; }
+
+    /* Panels and form fields */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .section h3{
+      margin: 0;
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+    label { font-weight: 600; font-size: 13px; color: var(--text); }
+
+    /* Inputs */
+    input[type=number]{
+      width: var(--field-w);
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input[type=number]:focus{ outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 22%, transparent); }
+    input[type=checkbox]{
+      width: 18px; height: 18px; appearance: none; border-radius: 4px; border: 1px solid var(--border);
+      background: var(--checkbox-bg); position: relative; cursor: pointer;
+      transition: border-color .15s ease, background-color .15s ease;
+    }
+    input[type=checkbox]:checked{ background: color-mix(in oklab, var(--focus) 14%, var(--checkbox-bg)); border-color: var(--focus); }
+    input[type=checkbox]::after{
+      content:""; position:absolute; inset: 3px; border-radius: 2px; background: var(--ok); opacity: 0;
+      transition: opacity .15s ease;
+    }
+    input[type=checkbox]:checked::after{ opacity: 1; }
+    .multi { display: grid; gap: 8px; }
+
+    /* Output */
+    pre {
+      margin: 0;
+      color: var(--mono);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- App wrapper -->
+  <div class="wrap">
+    <!-- Header -->
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Simulador de factura eléctrica</h1>
+      </div>
+      <button class="theme-toggle" id="toggleTheme" aria-pressed="true" aria-label="Cambiar tema">
+        Oscuro
+      </button>
+    </header>
+
+    <!-- Parameters -->
+    <section class="section" aria-label="Parámetros">
+      <h3>Parámetros</h3>
+
+      <div class="field">
+        <label for="dias">Días de facturación</label>
+        <input type="number" id="dias" value="30" step="1" oninput="calcular()" />
+      </div>
+
+      <div class="field">
+        <label for="dosPotencias">2 periodos de potencia (P1 y P2)</label>
+        <input type="checkbox" id="dosPotencias" onchange="actualizaPotencias(); calcular();" />
+      </div>
+      <div id="potencias" class="multi" aria-live="polite"></div>
+
+      <div class="field">
+        <label for="tresEnergias">3 periodos de energía (P1, P2 y P3)</label>
+        <input type="checkbox" id="tresEnergias" onchange="actualizaEnergias(); calcular();" />
+      </div>
+      <div id="energias" class="multi" aria-live="polite"></div>
+    </section>
+
+    <!-- Advanced options -->
+    <section class="section" aria-label="Opciones avanzadas">
+      <h3>Opciones avanzadas</h3>
+      <div class="field">
+        <label for="alquilerDia">Alquiler contador por día (€)</label>
+        <input type="number" id="alquilerDia" value="0.02666" step="0.00001" oninput="calcular()" />
+      </div>
+      <div class="field">
+        <label for="bonoDia">Bono social por día (€)</label>
+        <input type="number" id="bonoDia" value="0.012742" step="0.000001" oninput="calcular()" />
+      </div>
+      <div class="field">
+        <label for="impElect">Impuesto eléctrico fijo (%)</label>
+        <input type="number" id="impElect" value="5.1127" step="0.0001" oninput="calcular()" />
+      </div>
+      <div class="field">
+        <label for="iva">IVA fijo (%)</label>
+        <input type="number" id="iva" value="21" step="1" oninput="calcular()" />
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section" aria-label="Resumen de factura">
+      <h3>Resumen</h3>
+      <pre id="resultado"></pre>
+    </section>
+  </div>
+
+  <script>
+    // Theme toggle with persistence and system preference
+    (function(){
+      const html = document.documentElement;
+      const btn = document.getElementById('toggleTheme');
+
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        html.setAttribute('data-theme', saved);
+        btn.textContent = saved === 'dark' ? 'Oscuro' : 'Claro';
+        btn.setAttribute('aria-pressed', saved === 'dark');
+      }
+
+      btn.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        btn.textContent = next === 'dark' ? 'Oscuro' : 'Claro';
+        btn.setAttribute('aria-pressed', next === 'dark');
+      });
+
+      if (!saved) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const next = prefersDark ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        btn.textContent = next === 'dark' ? 'Oscuro' : 'Claro';
+        btn.setAttribute('aria-pressed', prefersDark);
+      }
+    })();
+
+    // Build power inputs based on selection (single vs two periods)
+    function actualizaPotencias() {
+      const dos = document.getElementById('dosPotencias').checked;
+      let co = '';
+      if (dos) {
+        co += '<div class="field"><label>Potencia P1 (kW)</label><input type="number" id="potencia1" value="4.6" step="0.01" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio fijo P1 (€/kW·día)</label><input type="number" id="precioFijoP1" value="0.06029" step="0.00001" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Potencia P2 (kW)</label><input type="number" id="potencia2" value="4.6" step="0.01" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio fijo P2 (€/kW·día)</label><input type="number" id="precioFijoP2" value="0.06029" step="0.00001" oninput="calcular()"></div>';
+      } else {
+        co += '<div class="field"><label>Potencia (kW)</label><input type="number" id="potencia1" value="4.6" step="0.01" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio término fijo (€/kW·día)</label><input type="number" id="precioFijoP1" value="0.12058" step="0.00001" oninput="calcular()"></div>';
+      }
+      document.getElementById('potencias').innerHTML = co;
+    }
+
+    // Build energy inputs based on selection (single vs three periods)
+    function actualizaEnergias() {
+      const tres = document.getElementById('tresEnergias').checked;
+      let co = '';
+      if (tres) {
+        co += '<div class="field"><label>Consumo P1 (kWh)</label><input type="number" id="consumo1" value="80" step="1" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio energía P1 (€/kWh)</label><input type="number" id="precioEnergia1" value="0.108995" step="0.000001" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Consumo P2 (kWh)</label><input type="number" id="consumo2" value="80" step="1" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio energía P2 (€/kWh)</label><input type="number" id="precioEnergia2" value="0.108995" step="0.000001" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Consumo P3 (kWh)</label><input type="number" id="consumo3" value="80" step="1" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio energía P3 (€/kWh)</label><input type="number" id="precioEnergia3" value="0.108995" step="0.000001" oninput="calcular()"></div>';
+      } else {
+        co += '<div class="field"><label>Consumo total (kWh)</label><input type="number" id="consumo1" value="240" step="1" oninput="calcular()"></div>';
+        co += '<div class="field"><label>Precio energía (€/kWh)</label><input type="number" id="precioEnergia1" value="0.108995" step="0.000001" oninput="calcular()"></div>';
+      }
+      document.getElementById('energias').innerHTML = co;
+    }
+
+    actualizaPotencias();
+    actualizaEnergias();
+
+    // Core calculation and summary output
+    function calcular() {
+      const dias = parseFloat(document.getElementById('dias').value) || 0;
+
+      const dosPot = document.getElementById('dosPotencias').checked;
+      const potencia1 = parseFloat(document.getElementById('potencia1')?.value) || 0;
+      const precioFijoP1 = parseFloat(document.getElementById('precioFijoP1')?.value) || 0;
+      const terminoFijoP1 = potencia1 * precioFijoP1 * dias;
+      let terminoFijoP2 = 0;
+      if (dosPot) {
+        const potencia2 = parseFloat(document.getElementById('potencia2')?.value) || 0;
+        const precioFijoP2 = parseFloat(document.getElementById('precioFijoP2')?.value) || 0;
+        terminoFijoP2 = potencia2 * precioFijoP2 * dias;
+      }
+      const terminoFijoTotal = terminoFijoP1 + terminoFijoP2;
+
+      const tresEnergias = document.getElementById('tresEnergias').checked;
+      let termoEnerP1=0, termoEnerP2=0, termoEnerP3=0, termoEnerTotal=0;
+      if (tresEnergias) {
+        const c1 = parseFloat(document.getElementById('consumo1')?.value) || 0;
+        const c2 = parseFloat(document.getElementById('consumo2')?.value) || 0;
+        const c3 = parseFloat(document.getElementById('consumo3')?.value) || 0;
+        const p1 = parseFloat(document.getElementById('precioEnergia1')?.value) || 0;
+        const p2 = parseFloat(document.getElementById('precioEnergia2')?.value) || 0;
+        const p3 = parseFloat(document.getElementById('precioEnergia3')?.value) || 0;
+        termoEnerP1 = c1 * p1;
+        termoEnerP2 = c2 * p2;
+        termoEnerP3 = c3 * p3;
+        termoEnerTotal = termoEnerP1 + termoEnerP2 + termoEnerP3;
+      } else {
+        const c1 = parseFloat(document.getElementById('consumo1')?.value) || 0;
+        const p1 = parseFloat(document.getElementById('precioEnergia1')?.value) || 0;
+        termoEnerP1 = c1 * p1;
+        termoEnerTotal = termoEnerP1;
+      }
+
+      const alquilerDia  = parseFloat(document.getElementById('alquilerDia')?.value) || 0;
+      const bonoDia      = parseFloat(document.getElementById('bonoDia')?.value)    || 0;
+      const impElect     = parseFloat(document.getElementById('impElect')?.value)   || 0;
+      const iva          = parseFloat(document.getElementById('iva')?.value)        || 0;
+      const alquiler = alquilerDia * dias;
+      const bonoSocial = bonoDia * dias;
+
+      const baseImpuesto = terminoFijoTotal + termoEnerTotal + bonoSocial;
+      const impuestoElectrico = baseImpuesto * (impElect/100);
+
+      const baseIVA = baseImpuesto + impuestoElectrico + alquiler;
+      const importeIVA = baseIVA * (iva/100);
+
+      const total = baseIVA + importeIVA;
+
+      let res = '';
+      if (dosPot) {
+        res += `Término fijo P1:   ${terminoFijoP1.toFixed(2)} €\nTérmino fijo P2:   ${terminoFijoP2.toFixed(2)} €\n`;
+      } else {
+        res += `Término fijo:      ${terminoFijoP1.toFixed(2)} €\n`;
+      }
+      if (tresEnergias) {
+        res += `Término energía P1: ${termoEnerP1.toFixed(2)} €\nTérmino energía P2: ${termoEnerP2.toFixed(2)} €\nTérmino energía P3: ${termoEnerP3.toFixed(2)} €\n`;
+      } else {
+        res += `Término energía:   ${termoEnerP1.toFixed(2)} €\n`;
+      }
+      res += 
+`Bono social:       ${bonoSocial.toFixed(2)} €
+Alquiler contador: ${alquiler.toFixed(2)} €
+-----------------------------
+Base Impuesto Eléctrico: ${baseImpuesto.toFixed(2)} €
+Impuesto eléctrico (${(impElect).toFixed(4)}%): ${impuestoElectrico.toFixed(2)} €
+Base IVA: ${baseIVA.toFixed(2)} €
+IVA (${(iva)}%): ${importeIVA.toFixed(2)} €
+-----------------------------
+TOTAL FACTURA: ${total.toFixed(2)} €`;
+
+      document.getElementById('resultado').textContent = res;
+    }
+
+    // Initial setup and first render
+    calcular();
+  </script>
+</body>
+</html>
